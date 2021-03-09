@@ -13,6 +13,11 @@ app.use(helmet());
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+const countryRouter = require('./src/modules/countries/country.router');
+const sightsRouter = require('./src/modules/sights/sights.router');
+
+app.use('/countries', countryRouter);
+app.use('/sights', sightsRouter);
 
 async function start() {
   try {
