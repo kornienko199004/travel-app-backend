@@ -20,7 +20,13 @@ const getAllByLang = async (lang) => {
     .project(countryExcludedFields);
 };
 
-const getOneByLang = async (id, lang) => {
+const getOneByLang = async (iso, lang) => {
+  const countryByIso = await Country.findOne({ ISO: String(iso).toUpperCase() });
+  if (!countryByIso) {
+    throw new NotFoundError(ENTITY_NAME);
+  }
+
+  const id = countryByIso._id;
   const data = await Country.aggregate()
     .match({ _id: Types.ObjectId(id) })
     .unwind('localizations')
