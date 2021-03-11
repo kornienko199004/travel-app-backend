@@ -5,8 +5,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const bcrypt = require('bcrypt');
 const User = require('./user.schema')
 const AUTH_COOKIE = 'travel-app-token'
+const saltRounds = 10;
 
 //init storage for save files
 const storage = multer.diskStorage({
@@ -18,7 +20,7 @@ const storage = multer.diskStorage({
     }
 });
 //init upload as middleware
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
 // middleware for check auth token
 function authToken(req, res, next) {
@@ -46,28 +48,31 @@ router.get('/get', authToken, async (req, res) => {
         })
 })
 
-router.post('/signUp', upload.single('image'), (req, res) => {
+router.post('/signUp', upload.single('image'), async (req, res) => {
+    const salt = await bcrypt.genSalt(saltRounds);
     const newUser = new User({
         login: req.body.login,
-        psw: req.body.password,
         img: {
             data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
             contentType: 'image/png'
         }
     })
-    newUser.save()
-
-    res.send({_id: newUser._id, img: newUser.img})
+    newUser.psw = await bcrypt.hash(req.body.password, salt)
+    newUser.save().then(({_id, img}) => res.send({_id, img}))
 })
 
 router.post('/signIn', async (req, res) => {
-    const {login, psw} = req.body
-    await User.findOne({login, psw})
-        .then((user) => {
-            if(!user)
+    const {login, password} = req.body
+    let user = await User.findOne({login});
+    if (!user)
+        res.sendStatus(401)
+    await bcrypt.compare(password, user.psw).then(
+        (isValid) => {
+            if (isValid) {
+                res.cookie(AUTH_COOKIE, generateAccessToken(user))
+                res.json({_id: user._id, img: user.img})
+            } else
                 res.sendStatus(401)
-            res.cookie(AUTH_COOKIE, generateAccessToken(user))
-            res.json({_id: user._id, img: user.img})
         }
     )
 });
