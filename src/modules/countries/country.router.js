@@ -32,7 +32,8 @@ router.post('/add', async (req, res) => {
     await country.save();
     res.status(201).json({ country });
     } catch (e) {
-      res.status(e.status).json({ message: e });
+      console.log(e);
+      res.status(e.status || 500).json({ message: e });
     }
   }
 );
