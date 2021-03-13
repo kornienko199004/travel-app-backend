@@ -41,7 +41,7 @@ function generateAccessToken({_id, login, psw}) {
 }
 
 
-router.get('/get', authToken, async (req, res) => {
+router.get('/', authToken, async (req, res) => {
     await User.findById(req.user._id)
         .then(({_id, img}) => {
             res.json({_id, img})
