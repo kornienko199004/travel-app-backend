@@ -34,6 +34,10 @@ const countrySchema = new Schema({
     unique: true,
     required: true,
   },
+  timeZone: {
+    type: Number,
+    required: true,
+  },
   mapPoint: {
     type: {
       type: String,

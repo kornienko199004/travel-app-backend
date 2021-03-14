@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     try {
-    const { imageUrl, videoUrl, currency, ISO, localizations, flagImageUrl } = req.body;
+    const { imageUrl, videoUrl, currency, ISO, localizations, flagImageUrl, timeZone } = req.body;
 
     const country = new Country({
       imageUrl,
@@ -27,6 +27,7 @@ router.post('/add', async (req, res) => {
       currency,
       ISO,
       localizations,
+      timeZone,
     });
 
     await country.save();
