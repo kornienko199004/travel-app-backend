@@ -7,6 +7,7 @@ const fs = require('fs');
 
 const bcrypt = require('bcrypt');
 const User = require('./user.schema')
+const Sight = require('../sights/sights.schema')
 const AUTH_COOKIE = 'travel-app-token'
 const saltRounds = 10;
 
@@ -88,5 +89,13 @@ router.get('/logout', (req, res) => {
     res.cookie(AUTH_COOKIE, "")
     res.send()
 });
+
+router.post('/score', authToken, async (req, res) => {
+    const {id, score} = req.body;
+    let sight = await Sight.findOne({_id: id})
+    sight.scores.push({user: req.user._id, score: score})
+    sight.save()
+    res.send()
+})
 
 module.exports = router
