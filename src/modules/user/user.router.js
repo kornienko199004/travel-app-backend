@@ -65,7 +65,7 @@ router.post('/signUp', upload.single('image'), async (req, res) => {
     newUser.psw = await bcrypt.hash(req.body.password, salt)
     newUser.save().then((user) => {
         res.cookie(AUTH_COOKIE, generateAccessToken(user))
-        res.send({_id: user._id, img: convertImage(user.img)})
+        res.send({_id: user._id, img: user.img.data ? convertImage(user.img) : null})
     })
 })
 
@@ -78,7 +78,7 @@ router.post('/signIn', async (req, res) => {
         (isValid) => {
             if (isValid) {
                 res.cookie(AUTH_COOKIE, generateAccessToken(user))
-                res.json({_id: user._id, img: convertImage(user.img)})
+                res.json({_id: user._id, img: user.img.data ? convertImage(user.img) : null})
             } else
                 res.sendStatus(401)
         }
@@ -92,8 +92,19 @@ router.get('/logout', (req, res) => {
 
 router.post('/score', authToken, async (req, res) => {
     const {id, score} = req.body;
-    let sight = await Sight.findOne({_id: id})
-    sight.scores.push({user: req.user._id, score: score})
+    let sight = await Sight.findOne({_id: id});
+
+    let updatedScores = [...sight.scores];
+    const index = sight.scores.findIndex(({ user }) => user.toString() === req.user._id.toString());
+    const newRecord = { user: req.user._id, score };
+
+    if (index > -1) {
+        updatedScores[index] = newRecord;
+    } else {
+        updatedScores = [...updatedScores, newRecord];
+    }
+
+    sight.scores = updatedScores;
     sight.save()
     res.send()
 })

@@ -5,6 +5,7 @@ const {
   COLLECTION_NAME: SIGHTS_COLLECTION_NAME,
 } = require('../sights/constants');
 const { Types } = require('mongoose');
+const User = require('../user/user.schema')
 
 const countryExcludedFields = { _id: 0, __v: 0, lang: 0, localizations: 0 };
 const placeExcludedFields = { countryId: 0, lang: 0, localizations: 0, __v: 0 };
@@ -53,8 +54,25 @@ const getOneByLang = async (iso, lang) => {
       as: 'sights',
     });
 
-  const country = data[0];
+  let country = data[0];
+
   if (country) {
+    if (country.sights.length > 0) {
+      country.sights = await Promise.all(country.sights.map(async (sight) => {
+        if (sight.scores.length > 0) {
+          sight.scores = await Promise.all(sight.scores.map(async (record) => {
+            const user = await User.findById(record.user);
+
+            if (user) {
+              return { ...record, img: user.img, name: user.login };
+            }
+
+            return record;
+          }));
+        }
+        return sight;
+      }));
+    }
     return country;
   }
   throw new NotFoundError(ENTITY_NAME);
