@@ -8,7 +8,15 @@ require('dotenv').config();
 const mongoUrl = `${process.env.MONGO_URL}`;
 
 const app = express();
-app.use(cors());
+
+let corsOptions = {
+    credentials: true,
+    origin: function(origin, callback) {
+        callback(null, true)
+    }
+}
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(cookieParser())
 
