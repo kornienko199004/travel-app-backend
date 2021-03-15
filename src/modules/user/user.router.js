@@ -45,7 +45,7 @@ function convertImage(image) {
     return `data:${image.contentType};base64,${image.data.toString('base64')}`
 }
 
-router.get('/get', authToken, async (req, res) => {
+router.get('/', authToken, async (req, res) => {
     await User.findById(req.user._id)
         .then(({_id, img}) => {
             res.json({_id, img: convertImage(img)})
