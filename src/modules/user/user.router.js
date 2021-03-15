@@ -28,9 +28,10 @@ function authToken(req, res, next) {
     if (!token)
         return res.sendStatus(401)
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
-        console.log(err)
-        if (err)
+        if (err) {
+            console.log(err)
             return res.sendStatus(403)
+        }
         req.user = data
         next()
     })
@@ -40,11 +41,14 @@ function generateAccessToken({_id, login, psw}) {
     return jwt.sign({_id, login, psw}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '3000s'});
 }
 
+function convertImage(image) {
+    return `data:${image.contentType};base64,${image.data.toString('base64')}`
+}
 
 router.get('/', authToken, async (req, res) => {
     await User.findById(req.user._id)
         .then(({_id, img}) => {
-            res.json({_id, img})
+            res.json({_id, img: convertImage(img)})
         })
 })
 
@@ -53,12 +57,15 @@ router.post('/signUp', upload.single('image'), async (req, res) => {
     const newUser = new User({
         login: req.body.login,
         img: {
-            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
+            data: (req.file) ? fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)) : null,
             contentType: 'image/png'
         }
     })
     newUser.psw = await bcrypt.hash(req.body.password, salt)
-    newUser.save().then(({_id, img}) => res.send({_id, img}))
+    newUser.save().then((user) => {
+        res.cookie(AUTH_COOKIE, generateAccessToken(user))
+        res.send({_id: user._id, img: convertImage(user.img)})
+    })
 })
 
 router.post('/signIn', async (req, res) => {
@@ -70,11 +77,16 @@ router.post('/signIn', async (req, res) => {
         (isValid) => {
             if (isValid) {
                 res.cookie(AUTH_COOKIE, generateAccessToken(user))
-                res.json({_id: user._id, img: user.img})
+                res.json({_id: user._id, img: convertImage(user.img)})
             } else
                 res.sendStatus(401)
         }
     )
+});
+
+router.get('/logout', (req, res) => {
+    res.cookie(AUTH_COOKIE, "")
+    res.send()
 });
 
 module.exports = router
