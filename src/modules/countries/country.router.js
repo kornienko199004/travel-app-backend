@@ -2,7 +2,7 @@ const express = require('express');
 const Country = require('./country.schema');
 const countryService = require('./country.service');
 const { DEFAULT_LANG } = require('../../common/common-vars');
-const { authToken } = require('../user/user.router');
+const { authToken } = require('../user/middleware');
 
 const router = express.Router();
 
