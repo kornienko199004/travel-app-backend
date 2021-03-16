@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage});
 
 // middleware for check auth token
-function authToken(req, res, next) {
+export function authToken(req, res, next) {
     const token = req.cookies[AUTH_COOKIE]
     if (!token)
         return res.sendStatus(401)

@@ -2,6 +2,7 @@ const express = require('express');
 const Country = require('./country.schema');
 const countryService = require('./country.service');
 const { DEFAULT_LANG } = require('../../common/common-vars');
+const { authToken } = require('../user/user.router');
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.post('/add', async (req, res) => {
       ISO,
       localizations,
       timeZone,
+      custom: req.body.custom ? true : false
     });
 
     await country.save();
@@ -45,6 +47,19 @@ router.get('/:id',
       const lang = req.query.lang || DEFAULT_LANG;
       const { id } = req.params;
       const data = await countryService.getOne(id, lang);
+      res.status(200).json(data);
+    } catch (e) {
+      res.status(e.status).json({ message: e });
+    }
+  },
+);
+
+router.delete('/:id',
+  authToken,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = await countryService.deleteOne(id, lang);
       res.status(200).json(data);
     } catch (e) {
       res.status(e.status).json({ message: e });

@@ -10,7 +10,13 @@ const getOne = async (isoCountry, lang) => {
   return country;
 };
 
+const deleteOne = async (id) => {
+  const country = await countryRepo.deleteOne(id);
+  return country;
+};
+
 module.exports = {
   getAll,
   getOne,
+  deleteOne,
 };

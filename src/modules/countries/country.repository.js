@@ -1,5 +1,5 @@
 const Country = require('./country.schema');
-const { NotFoundError } = require('../../common/errors/errors-list');
+const { NotFoundError, BadRequestError } = require('../../common/errors/errors-list');
 const { ENTITY_NAME } = require('./constants');
 const {
   COLLECTION_NAME: SIGHTS_COLLECTION_NAME,
@@ -78,7 +78,18 @@ const getOneByLang = async (iso, lang) => {
   throw new NotFoundError(ENTITY_NAME);
 };
 
+const deleteOne = async (id) => {
+  const country = await Country.findById(id);
+  if (country && country.custom) {
+    await Country.deleteOne({ _id: id })
+    return country;
+  }
+
+  throw new BadRequestError('Bad Request');
+};
+
 module.exports = {
   getAllByLang,
   getOneByLang,
+  deleteOne
 };
