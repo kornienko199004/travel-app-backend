@@ -48,6 +48,7 @@ const countrySchema = new Schema({
     },
   },
   localizations: [localeSchema],
+  custom: Boolean,
 });
 
 const Country = model('Country', countrySchema);
