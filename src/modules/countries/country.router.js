@@ -59,10 +59,10 @@ router.delete('/:id',
   async (req, res) => {
     try {
       const { id } = req.params;
-      const data = await countryService.deleteOne(id, lang);
+      const data = await countryService.deleteOne(id);
       res.status(200).json(data);
     } catch (e) {
-      res.status(e.status).json({ message: e });
+      res.status(e.status || 500).json({ message: e });
     }
   },
 );
