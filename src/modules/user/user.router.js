@@ -43,7 +43,12 @@ function generateAccessToken({_id, login, psw}) {
 }
 
 function convertImage(image) {
-    return `data:${image.contentType};base64,${image.data.toString('base64')}`
+    try {
+        return `data:${image.contentType};base64,${image.data.toString('base64')}`
+    } catch (e) {
+        console.error("image are not converted: ", e)
+        return null
+    }
 }
 
 router.get('/', authToken, async (req, res) => {
@@ -65,7 +70,7 @@ router.post('/signUp', upload.single('image'), async (req, res) => {
     newUser.psw = await bcrypt.hash(req.body.password, salt)
     newUser.save().then((user) => {
         res.cookie(AUTH_COOKIE, generateAccessToken(user))
-        res.send({_id: user._id, img: user.img.data ? convertImage(user.img) : null})
+        res.send({_id: user._id, img: convertImage(user.img)})
     })
 })
 
@@ -78,7 +83,7 @@ router.post('/signIn', async (req, res) => {
         (isValid) => {
             if (isValid) {
                 res.cookie(AUTH_COOKIE, generateAccessToken(user))
-                res.json({_id: user._id, img: user.img.data ? convertImage(user.img) : null})
+                res.json({_id: user._id, img: convertImage(user.img)})
             } else
                 res.sendStatus(401)
         }
