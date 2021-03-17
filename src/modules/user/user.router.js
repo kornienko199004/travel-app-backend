@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const {authToken} = require("./middleware");
 const bcrypt = require('bcrypt');
 const User = require('./user.schema')
 const Sight = require('../sights/sights.schema')
@@ -22,21 +23,6 @@ const storage = multer.diskStorage({
 });
 //init upload as middleware
 const upload = multer({storage: storage});
-
-// middleware for check auth token
-function authToken(req, res, next) {
-    const token = req.header('Authorization')
-    if (!token)
-        return res.sendStatus(401)
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
-        if (err) {
-            console.log(err)
-            return res.sendStatus(403)
-        }
-        req.user = data
-        next()
-    })
-}
 
 function generateAccessToken({_id, login, psw}) {
     return jwt.sign({_id, login, psw}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '3000s'});
