@@ -21,6 +21,18 @@ const getAllByLang = async (lang) => {
     .project(countryExcludedFields);
 };
 
+function convertImage(image) {
+  if (!image.data) {
+      return null
+  }
+  try {
+      return `data:${image.contentType};base64,${image.data.toString('base64')}`
+  } catch (e) {
+      console.error("image are not converted: ", e)
+      return null
+  }
+}
+
 const getOneByLang = async (iso, lang) => {
   const countryByIso = await Country.findOne({ ISO: String(iso).toUpperCase() });
   if (!countryByIso) {
@@ -64,7 +76,7 @@ const getOneByLang = async (iso, lang) => {
             const user = await User.findById(record.user);
 
             if (user) {
-              return { ...record, img: user.img, name: user.login };
+              return { ...record, img: convertImage(user.img), name: user.login };
             }
 
             return record;
