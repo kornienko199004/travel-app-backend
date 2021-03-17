@@ -19,9 +19,9 @@ router.get('/', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     try {
-    const { imageUrl, videoUrl, currency, ISO, localizations, flagImageUrl, timeZone } = req.body;
+    const { imageUrl, videoUrl, currency, ISO, localizations, flagImageUrl, timeZone, mapPoint } = req.body;
 
-    const country = new Country({
+    const countryBody = {
       imageUrl,
       videoUrl,
       flagImageUrl,
@@ -30,7 +30,13 @@ router.post('/add', async (req, res) => {
       localizations,
       timeZone,
       custom: req.body.custom ? true : false
-    });
+    };
+
+    if (mapPoint) {
+      countryBody['mapPoint'] = mapPoint;
+    }
+
+    const country = new Country(countryBody);
 
     await country.save();
     res.status(201).json({ country });

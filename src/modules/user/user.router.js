@@ -53,8 +53,8 @@ function convertImage(image) {
 
 router.get('/', authToken, async (req, res) => {
     await User.findById(req.user._id)
-        .then(({_id, img}) => {
-            res.json({_id, img: convertImage(img)})
+        .then(({_id, img, login}) => {
+            res.json({ _id, img: convertImage(img), name: login })
         })
 })
 
@@ -83,7 +83,7 @@ router.post('/signIn', async (req, res) => {
         (isValid) => {
             if (isValid) {
                 res.cookie(AUTH_COOKIE, generateAccessToken(user))
-                res.json({_id: user._id, img: convertImage(user.img)})
+                res.json({_id: user._id, img: convertImage(user.img), name: user.login })
             } else
                 res.sendStatus(401)
         }
